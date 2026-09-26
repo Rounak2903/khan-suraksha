@@ -1,0 +1,19 @@
+{
+  "name": "खान सुरक्षा AR | KHAN-SURAKSHA",
+  "short_name": "खान सुरक्षा",
+  "description": "Mobile AR Industrial Safety Simulator for Jharkhand Mines - DGMS Compliant",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080B10",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity", "utilities"]
+}

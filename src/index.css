@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-[#0c0f14] text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-amber-500 selection:text-black;
+  }
+}
+
+/* Custom industrial scanline & grid effects */
+.industrial-grid {
+  background-image: linear-gradient(rgba(245, 158, 11, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(245, 158, 11, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.coal-metal-bg {
+  background: radial-gradient(circle at 50% 0%, #1a2230 0%, #0d1219 75%, #080c10 100%);
+}
+
+/* Pulse animation for hazard alerts */
+@keyframes hazard-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+
+.animate-hazard {
+  animation: hazard-pulse 1.8s infinite ease-in-out;
+}

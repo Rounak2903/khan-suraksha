@@ -1,0 +1,113 @@
+export const translations = {
+  hi: {
+    name: 'हिन्दी',
+    nativeName: 'हिन्दी',
+    tagline: 'झारखंड खान सुरक्षा एवं व्यावसायिक प्रशिक्षण सिम्युलेटर',
+    subtitle: 'डीजीएमएस (DGMS) धनबाद सुरक्षा मानकों और खान अधिनियम 1952 के तहत',
+    selectLang: 'भाषा चुनें / ᱯᱟᱹᱨᱥᱤ ᱵᱟᱪᱷᱟᱣ ᱢᱮ',
+    workerMode: 'श्रमिक एआर प्रशिक्षण',
+    adminMode: 'डीजीएमएस अनुपालन डैशबोर्ड',
+    offlineStatus: 'ऑफलाइन मोड सक्रिय (भूमिगत खदान तैयार)',
+    modulesTitle: 'औद्योगिक सुरक्षा एआर मॉड्यूल',
+    module1Title: 'आग और विस्फोट नियंत्रण (P-A-S-S)',
+    module1Desc: 'अग्निशामक यंत्र (Fire Extinguisher) का उपयोग एवं आपातकालीन निकास ड्रिल',
+    module2Title: 'गैस रिसाव एवं सीमित स्थान (Methane & CO)',
+    module2Desc: 'जहरीली गैस चेतावनी, SCSR मास्क चयन और बडी-सिस्टम जांच',
+    startDrill: 'एआर ड्रिल शुरू करें',
+    cameraPermission: 'कैमरा शुरू करें (फोन को फर्श पर रखें)',
+    passSteps: {
+      p: { title: 'P - Pull (पिन खींचें)', desc: 'अग्निशामक यंत्र की सुरक्षा सील और पिन को बाहर खींचें।' },
+      a: { title: 'A - Aim (जड़ पर निशाना)', desc: 'आग की लपटों पर नहीं, आग की जड़ (Base) पर निशाना लगाएं।' },
+      s1: { title: 'S - Squeeze (लीवर दबाएं)', desc: 'धीमी और स्थिर गति से हैंडल/लीवर को दबाकर रखें।' },
+      s2: { title: 'S - Sweep (झाड़ू की तरह घुमाएं)', desc: 'आग बुझने तक नोजल को बाएं से दाएं घुमाते रहें।' }
+    },
+    gasSteps: {
+      step1: 'खदान में मीथेन (CH₄) 2.4% का रिसाव! तुरंत अलार्म पहचानें।',
+      step2: 'सही जीवनरक्षक उपकरण (SCSR मास्क) का चयन करें।',
+      step3: 'बडी-सिस्टम: अपने साथी खनिक के एयर-सील की पुष्टि करें।'
+    },
+    actionDone: 'सत्यापित / पूर्ण',
+    fireExtinguished: 'आग सफलता पूर्वक बुझाई गई!',
+    evacuatePath: 'आपातकालीन निकास मार्ग (Exit Shaft) का अनुसरण करें',
+    assessmentTitle: 'व्यावसायिक सुरक्षा योग्यता परीक्षा (CAS Score)',
+    examScore: 'आपका सुरक्षा स्कोर',
+    passedMsg: 'बधाई! आपने डीजीएमएस सुरक्षा प्रमाणन उत्तीर्ण किया है।',
+    downloadCert: 'डिजिटल सुरक्षा पासपोर्ट (QR कोड) प्राप्त करें',
+    retake: 'पुनः अभ्यास करें',
+    verifiedCard: 'डीजीएमएस डिजिटल सुरक्षा कार्ड - वैध'
+  },
+  sat: {
+    name: 'Santali',
+    nativeName: 'ᱥᱟᱱᱛᱟᱲᱤ',
+    tagline: 'ᱡᱷᱟᱨᱠᱷᱚᱸᱰ ᱠᱷᱟᱫᱟᱱ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱟᱨ ᱥᱮᱪᱮᱫ ᱥᱤᱢᱩᱞᱮᱴᱚᱨ',
+    subtitle: 'DGMS ᱫᱷᱟᱱᱵᱟᱫᱽ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱱᱤᱭᱚᱢ ᱟᱨ ᱠᱷᱟᱫᱟᱱ ᱟᱹᱭᱤᱱ ᱑᱙᱕᱒ ᱞᱮᱠᱟᱛᱮ',
+    selectLang: 'ᱯᱟᱹᱨᱥᱤ ᱵᱟᱪᱷᱟᱣ ᱢᱮ / भाषा चुनें',
+    workerMode: 'ᱠᱟᱹᱢᱤᱭᱟᱹ AR ᱥᱮᱪᱮᱫ',
+    adminMode: 'DGMS ᱠᱚᱢᱯᱞᱟᱭᱟᱱᱥ ᱰᱮᱥᱵᱳᱨᱰ',
+    offlineStatus: 'ᱚᱯᱷᱞᱟᱭᱤᱱ ᱢᱳᱰ ᱪᱟᱹᱞᱩ (ᱚᱛ ᱞᱟᱛᱟᱨ ᱠᱷᱟᱫᱟᱱ ᱞᱟᱹᱜᱤᱫ)',
+    modulesTitle: 'ᱠᱟᱹᱨᱜᱟᱲ ᱨᱩᱠᱷᱤᱭᱟᱹ AR ᱢᱳᱰᱩᱞ',
+    module1Title: 'ᱥᱮᱸᱜᱮᱞ ᱟᱨ ᱵᱚᱢᱵᱟ ᱦᱩᱞ (P-A-S-S)',
+    module1Desc: 'ᱥᱮᱸᱜᱮᱞ ᱤᱬᱤᱡ ᱡᱚᱱᱛᱨᱚ (Extinguisher) ᱵᱮᱵᱷᱟᱨ ᱟᱨ ᱵᱟᱦᱨᱮ ᱚᱰᱚᱠᱚᱜ ᱰᱨᱤᱞ',
+    module2Title: 'ᱵᱤᱥ ᱦᱚᱭ ᱟᱨ ᱥᱟᱸᱵᱽᱲᱟᱣ ᱡᱟᱭᱜᱟ (Methane & CO)',
+    module2Desc: 'ᱵᱚᱛᱚᱨᱟᱱ ᱦᱚᱭ ᱪᱤᱱᱦᱟᱹᱣ, SCSR ᱢᱩᱠᱷᱚᱴᱟ ᱵᱟᱪᱷᱟᱣ ᱟᱨ ᱜᱟᱛᱮ ᱪᱮᱠ',
+    startDrill: 'AR ᱰᱨᱤᱞ ᱮᱦᱚᱵᱽ ᱢᱮ',
+    cameraPermission: 'ᱠᱮᱢᱨᱟ ᱮᱦᱚᱵᱽ ᱢᱮ (ᱯᱷᱳᱱ ᱚᱛ ᱨᱮ ᱫᱚᱦᱚᱭ ᱢᱮ)',
+    passSteps: {
+      p: { title: 'P - Pull (ᱯᱤᱱ ᱚᱨ ᱢᱮ)', desc: 'ᱥᱮᱸᱜᱮᱞ ᱤᱬᱤᱡ ᱢᱤᱥᱤᱱ ᱨᱮᱭᱟᱜ ᱥᱤᱞ ᱟᱨ ᱯᱤᱱ ᱚᱨ ᱚᱰᱚᱠ ᱢᱮ।' },
+      a: { title: 'A - Aim (ᱵᱩᱴᱟᱹ ᱨᱮ ᱴᱟᱨᱜᱮᱴ)', desc: 'ᱥᱮᱸᱜᱮᱞ ᱪᱮᱛᱟᱱ ᱫᱚ ᱵᱟᱝ, ᱥᱮᱸᱜᱮᱞ ᱵᱩᱴᱟᱹ (Base) ᱨᱮ ᱴᱟᱨᱜᱮᱴ ᱢᱮ।' },
+      s1: { title: 'S - Squeeze (ᱞᱤᱵᱷᱟᱨ ᱫᱟᱵᱟᱣ)', desc: 'ᱠᱮᱴᱮᱡ ᱛᱮ ᱞᱤᱵᱷᱟᱨ ᱫᱟᱵᱟᱣ ᱠᱟᱛᱮ ᱫᱚᱦᱚᱭ ᱢᱮ।' },
+      s2: { title: 'S - Sweep (ᱟᱹᱪᱩᱨ ᱢᱮ)', desc: 'ᱥᱮᱸᱜᱮᱞ ᱤᱬᱤᱡ ᱦᱟᱹᱵᱤᱡ ᱞᱮᱸᱜᱟ ᱠᱷᱚᱱ ᱡᱚᱡᱚᱢ ᱟᱹᱪᱩᱨ ᱢᱮ।' }
+    },
+    gasSteps: {
+      step1: 'ᱠᱷᱟᱫᱟᱱ ᱨᱮ ᱢᱤᱛᱷᱮᱱ ᱦᱚᱭ ᱧᱟᱢᱮᱱᱟ! ᱩᱥᱟᱹᱨᱟ ᱦᱩᱥᱤᱭᱟᱹᱨ ᱢᱮ।',
+      step2: 'ᱥᱟᱹᱨᱤ ᱡᱤᱣᱤ ᱨᱩᱠᱷᱤᱭᱟᱹ (SCSR ᱢᱩᱠᱷᱚᱴᱟ) ᱦᱚᱨᱚᱜ ᱢᱮ।',
+      step3: 'ᱜᱟᱛᱮ ᱪᱮᱠ: ᱟᱢᱟᱜ ᱜᱟᱛᱮ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱟᱜ ᱦᱚᱭ-ᱥᱤᱞ ᱧᱮᱞ ᱢᱮ।'
+    },
+    actionDone: 'ᱥᱟᱹᱛ ᱮᱱᱟ / ᱴᱷᱤᱠ ᱜᱮᱭᱟ',
+    fireExtinguished: 'ᱥᱮᱸᱜᱮᱞ ᱤᱬᱤᱡ ᱮᱱᱟ!',
+    evacuatePath: 'ᱵᱟᱦᱨᱮ ᱚᱰᱚᱠᱚᱜ ᱰᱟᱦᱟᱨ (Exit Shaft) ᱛᱮ ᱪᱟᱞᱟᱜ ᱢᱮ',
+    assessmentTitle: 'ᱠᱟᱹᱢᱤ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱵᱤᱰᱟᱹᱣ (CAS ᱥᱠᱳᱨ)',
+    examScore: 'ᱟᱢᱟᱜ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱥᱠᱳᱨ',
+    passedMsg: 'ᱡᱚᱦᱟᱨ! ᱟᱢ DGMS ᱨᱩᱠᱷᱤᱭᱟᱹ ᱯᱟᱥᱯᱳᱨᱴ ᱮᱢ ᱟᱢᱮᱴ ᱠᱮᱫᱟ।',
+    downloadCert: 'ᱰᱤᱡᱤᱴᱟᱞ ᱥᱟᱨᱴᱤᱯᱷᱤᱠᱮᱴ (QR) ᱧᱟᱢ ᱢᱮ',
+    retake: 'ᱫᱚᱦᱲᱟ ᱮᱦᱚᱵᱽ ᱢᱮ',
+    verifiedCard: 'DGMS ᱰᱤᱡᱤᱴᱟᱞ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱠᱟᱨᱰ - ᱥᱟᱹᱨᱤ'
+  },
+  en: {
+    name: 'English',
+    nativeName: 'English',
+    tagline: 'Jharkhand Mine Safety & AR Vocational Simulator',
+    subtitle: 'DGMS Dhanbad Standards & Mines Act 1952 Compliance',
+    selectLang: 'Select Language',
+    workerMode: 'Worker AR Training',
+    adminMode: 'DGMS Compliance Dashboard',
+    offlineStatus: 'Offline Mode Active (Deep Pit Ready)',
+    modulesTitle: 'Industrial Safety AR Modules',
+    module1Title: 'Fire & Explosion Response (P-A-S-S)',
+    module1Desc: 'Extinguisher operation, flame-base suppression, and exit vectoring',
+    module2Title: 'Gas Leak & Confined Space (Methane & CO)',
+    module2Desc: 'Toxic gas threshold detection, SCSR selection, and buddy protocol',
+    startDrill: 'Launch AR Simulator',
+    cameraPermission: 'Activate Camera (Aim towards floor)',
+    passSteps: {
+      p: { title: 'P - Pull the Pin', desc: 'Break the tamper seal and pull the locking pin.' },
+      a: { title: 'A - Aim at Base', desc: 'Do not aim at high flames. Target the burning fuel bed base.' },
+      s1: { title: 'S - Squeeze Lever', desc: 'Depress the trigger handle smoothly to release extinguishing agent.' },
+      s2: { title: 'S - Sweep Side-to-Side', desc: 'Sweep 15cm past the edge of fire until totally quenched.' }
+    },
+    gasSteps: {
+      step1: '2.4% Methane spike detected in Sector 4! Identify alarm acoustic.',
+      step2: 'Select correct Class-1 Self-Contained Self-Rescuer (SCSR).',
+      step3: 'Perform buddy seal test on your partner\'s oxygen regulator.'
+    },
+    actionDone: 'Verified / Complete',
+    fireExtinguished: 'Fire Hazard Successfully Neutralized!',
+    evacuatePath: 'Follow projected 3D Escape Waypoint Vector',
+    assessmentTitle: 'Safety Competency Assessment Score (CAS)',
+    examScore: 'Your Competency Score',
+    passedMsg: 'Certified: Qualified for DGMS Pit Entry Clearance.',
+    downloadCert: 'Generate Digital Safety Passport (QR)',
+    retake: 'Retake Training Drill',
+    verifiedCard: 'DGMS Digital Safety Passport - Verified'
+  }
+};
