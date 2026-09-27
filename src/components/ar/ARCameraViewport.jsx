@@ -3,7 +3,7 @@ import { Camera, CameraOff, Sparkles, AlertCircle } from 'lucide-react';
 import Module1FirePass from './Module1FirePass';
 import Module2GasConfined from './Module2GasConfined';
 
-export default function ARCameraViewport({ activeModule, lang, soundEnabled, onModuleComplete }) {
+export default function ARCameraViewport({ activeModule, lang, soundEnabled, onModuleComplete, onNextModule, onViewCertificate }) {
   const videoRef = useRef(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
@@ -101,6 +101,7 @@ export default function ARCameraViewport({ activeModule, lang, soundEnabled, onM
             lang={lang}
             soundEnabled={soundEnabled}
             onModuleComplete={onModuleComplete}
+            onNextModule={onNextModule}
           />
         )}
         {activeModule === 2 && (
@@ -108,6 +109,7 @@ export default function ARCameraViewport({ activeModule, lang, soundEnabled, onM
             lang={lang}
             soundEnabled={soundEnabled}
             onModuleComplete={onModuleComplete}
+            onViewCertificate={onViewCertificate}
           />
         )}
       </div>

@@ -8,7 +8,9 @@ export default function Header({
   lang, 
   setLang, 
   soundEnabled, 
-  setSoundEnabled 
+  setSoundEnabled,
+  currentWorker,
+  onLogout
 }) {
   const t = translations[lang] || translations.hi;
 

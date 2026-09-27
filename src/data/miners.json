@@ -1,0 +1,24 @@
+{
+  "JH-BCCL-9792": {
+    "id": "JH-BCCL-9792",
+    "name": "Shreyash Jaiswal",
+    "age": 28,
+    "blood": "O+",
+    "mobile": "8741214212",
+    "emergency": "2132332879",
+    "pin": "7777",
+    "pinSet": true,
+    "colliery": "BCCL Jharia Underground (Seam 4)",
+    "trade": "Coal Face Driller",
+    "shift": "Shift A (06:00 - 14:00)",
+    "status": "UNDERGROUND",
+    "location": "Seam 4 - Active Gallery",
+    "lastScan": "IN @ 3:30:22 am",
+    "hr": 76,
+    "spo2": 98,
+    "vitalsOk": true,
+    "fireScore": 94,
+    "gasScore": 92,
+    "enrolledAt": "2026-09-27T19:27:27.858Z"
+  }
+}

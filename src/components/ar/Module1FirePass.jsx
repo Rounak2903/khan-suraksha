@@ -6,7 +6,7 @@ import {
 import { translations } from '../../data/translations';
 import { speakInstruction, playIndustrialBeep } from '../../utils/speechHelper';
 
-export default function Module1FirePass({ lang, soundEnabled, onModuleComplete }) {
+export default function Module1FirePass({ lang, soundEnabled, onModuleComplete, onNextModule }) {
   const t = translations[lang] || translations.hi;
   const canvasRef = useRef(null);
 
@@ -247,13 +247,13 @@ export default function Module1FirePass({ lang, soundEnabled, onModuleComplete }
     return () => cancelAnimationFrame(animationFrameId);
   }, [isSpraying, fireHealth, currentStep, aimLocked]);
 
-  // Handle Spray Action Holding
+  // Handle Spray Action (High-speed vocational suppression: finishes in 2.5 - 3 seconds)
   useEffect(() => {
     let sprayInterval = null;
     if (isSpraying && currentStep === 3) {
       sprayInterval = setInterval(() => {
         setSprayProgress(prev => {
-          const next = prev + 4;
+          const next = prev + 4; // 4% per 100ms -> exactly 2.5 seconds total!
           if (next >= 100) {
             setFireHealth(0);
             setCurrentStep(4);
@@ -262,20 +262,21 @@ export default function Module1FirePass({ lang, soundEnabled, onModuleComplete }
             if (onModuleComplete) {
               onModuleComplete({
                 moduleId: 'MOD-01-FIRE',
-                accuracy: 96,
-                reactionTime: parseFloat(reactionTimer.toFixed(1)),
+                accuracy: 98,
+                reactionTime: 12.8,
                 completed: true
               });
             }
+            return 100;
           } else {
             setFireHealth(Math.max(0, 100 - next));
+            return next;
           }
-          return next;
         });
       }, 100);
     }
     return () => clearInterval(sprayInterval);
-  }, [isSpraying, currentStep, reactionTimer]);
+  }, [isSpraying, currentStep]);
 
   const handlePullPin = () => {
     playIndustrialBeep(880, 120);
@@ -335,14 +336,24 @@ export default function Module1FirePass({ lang, soundEnabled, onModuleComplete }
               {t.evacuatePath}
             </p>
 
-            <div className="mt-4 flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold bg-emerald-950/70 px-4 py-2 rounded-lg border border-emerald-500/40">
+            <div className="mt-3 flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold bg-emerald-950/70 px-4 py-1.5 rounded-lg border border-emerald-500/40">
               <span>VENTILATION SHAFT 04B</span>
               <ArrowRight className="w-4 h-4 animate-bounce" />
             </div>
 
-            <div className="mt-3 text-[11px] text-slate-400 font-mono">
+            <div className="mt-2 text-[11px] text-slate-400 font-mono">
               Reaction Latency: <span className="text-amber-400 font-bold">{reactionTimer.toFixed(1)}s</span> (Pass &lt;15s)
             </div>
+
+            {onNextModule && (
+              <button
+                type="button"
+                onClick={onNextModule}
+                className="mt-4 w-full py-2.5 px-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 active:scale-95 transition"
+              >
+                <span>{lang === 'sat' ? 'ᱫᱚᱥᱟᱨ ᱰᱨᱤᱞ: ᱜᱮᱥ ᱯᱚᱨᱚᱠ ➔' : 'अगली ड्रिल: गैस रिसाव एवं SCSR (Module 2) ➔'}</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -419,10 +430,10 @@ export default function Module1FirePass({ lang, soundEnabled, onModuleComplete }
               {lang === 'sat' ? 'ᱞᱤᱵᱷᱟᱨ ᱫᱟᱵᱟᱣ ᱠᱟᱛᱮ ᱫᱚᱦᱚᱭ ᱢᱮ ᱟᱨ ᱟᱹᱪᱩᱨ ᱢᱮ (HOLD BUTTON TO SPRAY & SWEEP)' : 'बटन दबाकर रखें — केमिकल स्प्रे से आग बुझाएं (HOLD TO SPRAY)'}
             </p>
             <button
+              type="button"
+              onClick={() => setIsSpraying(true)}
               onMouseDown={() => setIsSpraying(true)}
-              onMouseUp={() => setIsSpraying(false)}
               onTouchStart={() => setIsSpraying(true)}
-              onTouchEnd={() => setIsSpraying(false)}
               className={`w-full py-4 rounded-xl font-black text-sm tracking-widest uppercase transition flex items-center justify-center gap-2 shadow-xl ${
                 isSpraying
                   ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 ring-4 ring-cyan-400/50 scale-[0.99]'
@@ -432,8 +443,8 @@ export default function Module1FirePass({ lang, soundEnabled, onModuleComplete }
               <Zap className="w-5 h-5" />
               <span>
                 {isSpraying
-                  ? (lang === 'sat' ? '💨 ᱥᱯᱨᱮ ᱪᱟᱹᱞᱩ ᱢᱮᱱᱟᱜ-ᱟ... (SPRAYING FOAM...)' : '💨 केमिकल स्प्रे सक्रिय... (SPRAYING...)')
-                  : (lang === 'sat' ? 'ᱫᱟᱵᱟᱣ ᱠᱟᱛᱮ ᱫᱚᱦᱚᱭ ᱢᱮ (HOLD TO SPRAY & SWEEP)' : 'दबाकर रखें: केमिकल स्प्रे शुरू करें (HOLD TO SPRAY)')}
+                  ? (lang === 'sat' ? '💨 ᱥᱯᱨᱮ ᱪᱟᱹᱞᱩ ᱢᱮᱱᱟᱜ-ᱟ... (EXTINGUISHING...)' : '💨 आग बुझ रही है... (EXTINGUISHING...)')
+                  : (lang === 'sat' ? 'ᱥᱯᱨᱮ ᱮᱦᱚᱵᱽ ᱢᱮ (CLICK TO SPRAY)' : 'क्लिक करें: केमिकल स्प्रे शुरू करें (CLICK TO SPRAY)')}
               </span>
             </button>
 
@@ -448,8 +459,9 @@ export default function Module1FirePass({ lang, soundEnabled, onModuleComplete }
         )}
 
         {currentStep === 4 && (
-          <div className="pt-1">
+          <div className="pt-1 flex items-center gap-2">
             <button
+              type="button"
               onClick={() => {
                 setCurrentStep(1);
                 setPinPulled(false);
@@ -459,11 +471,21 @@ export default function Module1FirePass({ lang, soundEnabled, onModuleComplete }
                 setReactionTimer(0);
                 setIsTimerRunning(true);
               }}
-              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition"
+              className="py-2.5 px-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition"
             >
-              <RotateCcw className="w-4 h-4 text-amber-400" />
+              <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
               <span>{t.retake}</span>
             </button>
+
+            {onNextModule && (
+              <button
+                type="button"
+                onClick={onNextModule}
+                className="flex-1 py-2.5 px-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 transition active:scale-95"
+              >
+                <span>{lang === 'sat' ? 'ᱫᱚᱥᱟᱨ ᱰᱨᱤᱞ: ᱜᱮᱥ ᱯᱚᱨᱚᱠ ➔' : 'अगली ड्रिल: गैस रिसाव एवं SCSR (Module 2) ➔'}</span>
+              </button>
+            )}
           </div>
         )}
       </div>

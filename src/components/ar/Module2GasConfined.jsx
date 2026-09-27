@@ -6,7 +6,7 @@ import {
 import { translations } from '../../data/translations';
 import { speakInstruction, playIndustrialBeep } from '../../utils/speechHelper';
 
-export default function Module2GasConfined({ lang, soundEnabled, onModuleComplete }) {
+export default function Module2GasConfined({ lang, soundEnabled, onModuleComplete, onViewCertificate }) {
   const t = translations[lang] || translations.hi;
   const canvasRef = useRef(null);
 
@@ -292,14 +292,24 @@ export default function Module2GasConfined({ lang, soundEnabled, onModuleComplet
               Methane level normalized to 0.4%. Closed-circuit SCSR breathing verified for all shift members.
             </p>
 
-            <div className="mt-4 flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold bg-emerald-950/70 px-4 py-2 rounded-lg border border-emerald-500/40">
+            <div className="mt-3 flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold bg-emerald-950/70 px-4 py-1.5 rounded-lg border border-emerald-500/40">
               <span>PIT-HEAD SURFACE LEVEL</span>
               <ArrowRight className="w-4 h-4" />
             </div>
 
-            <div className="mt-3 text-[11px] text-slate-400 font-mono">
+            <div className="mt-2 text-[11px] text-slate-400 font-mono">
               Action Latency: <span className="text-amber-400 font-bold">{reactionTimer.toFixed(1)}s</span> (Pass &lt;20s)
             </div>
+
+            {onViewCertificate && (
+              <button
+                type="button"
+                onClick={onViewCertificate}
+                className="mt-4 w-full py-2.5 px-3 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-95 transition"
+              >
+                <span>{lang === 'sat' ? 'ᱥᱩᱨᱚᱠᱷᱭᱟ ᱯᱟᱥᱯᱳᱨᱴ ᱧᱮᱞ ᱢᱮ ➔' : 'डिजिटल सुरक्षा पासपोर्ट देखें (VIEW PASSPORT) ➔'}</span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -311,20 +321,33 @@ export default function Module2GasConfined({ lang, soundEnabled, onModuleComplet
           <span>DGMS Threshold: &lt;1.25% CH₄ (Mines Act 1952)</span>
         </div>
         {gasStep === 4 && (
-          <button
-            onClick={() => {
-              setGasStep(1);
-              setSelectedPpe(null);
-              setBuddyVerified(false);
-              setReactionTimer(0);
-              setCh4Level(2.4);
-              setCoPpm(78);
-            }}
-            className="flex items-center gap-1 text-amber-400 hover:underline font-bold"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span>{t.retake}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setGasStep(1);
+                setSelectedPpe(null);
+                setBuddyVerified(false);
+                setReactionTimer(0);
+                setCh4Level(2.4);
+                setCoPpm(78);
+              }}
+              className="flex items-center gap-1 text-amber-400 hover:underline font-bold text-xs"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>{t.retake}</span>
+            </button>
+
+            {onViewCertificate && (
+              <button
+                type="button"
+                onClick={onViewCertificate}
+                className="py-1 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs flex items-center gap-1 shadow transition"
+              >
+                <span>{lang === 'sat' ? 'ᱥᱟᱨᱴᱤᱯᱷᱤᱠᱮᱴ ➔' : 'सर्टिफिकेट देखें ➔'}</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
