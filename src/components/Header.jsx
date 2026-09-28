@@ -49,30 +49,10 @@ export default function Header({
             <span>PIT-OFFLINE READY</span>
           </div>
 
-          {/* View Mode Toggle: Worker vs Admin */}
-          <div className="flex bg-[#121824] p-1 rounded-lg border border-slate-700/60 text-xs font-semibold">
-            <button
-              onClick={() => setActiveView('worker')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition ${
-                activeView === 'worker'
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
-                  : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>{t.workerMode}</span>
-            </button>
-            <button
-              onClick={() => setActiveView('admin')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition ${
-                activeView === 'admin'
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
-                  : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>{t.adminMode}</span>
-            </button>
+          {/* Worker AR Training Badge (Dedicated Worker Interface) */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold font-mono shadow-sm">
+            <Eye className="w-3.5 h-3.5 text-amber-400" />
+            <span>{t.workerMode}</span>
           </div>
 
           {/* Language Selector */}

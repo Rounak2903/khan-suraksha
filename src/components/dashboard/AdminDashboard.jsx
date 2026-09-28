@@ -7,8 +7,9 @@ import {
   Camera, CameraOff, AlertOctagon, Sparkles
 } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
+import jsQR from 'jsqr';
 import { playIndustrialBeep } from '../../utils/speechHelper';
-import { fetchMasterMiners, postMinerAction } from '../../utils/apiMiners';
+import { fetchMasterMiners, postMinerAction, fetchEmergencyStatus, postEmergencyAction } from '../../utils/apiMiners';
 
 const STORAGE_KEY = 'khan_suraksha_registered_miners';
 
@@ -64,11 +65,32 @@ const DASHBOARD_TEXTS = {
     scanBtn: 'SCAN PASSPORT',
     resultTitle: 'Verification Result',
     noScans: 'No recent scans recorded',
-    noScansSub: 'Select a miner on the left and click "Scan Passport" to view verification receipt',
+    noScansSub: 'Select a miner on the left or scan a QR code to view verification receipt',
     approvedIn: '✓ GATE-IN APPROVED (UNDERGROUND)',
     approvedOut: '✓ GATE-OUT COMPLETE (ON SURFACE)',
     statutoryAudit: 'STATUTORY AUDIT: DGMS COMPLIANT',
     tamperProof: 'TAMPER-PROOF LEDGER',
+    startCameraBtn: '📸 Start Camera Scanner',
+    stopCameraBtn: 'Stop Camera',
+    uploadQrBtn: '📁 Upload QR Photo',
+    cameraHint: 'Point phone QR code towards webcam or upload image directly.',
+    liveScanningText: 'Point phone QR at camera... (Scanning)',
+    instantFallback: 'Or 1-Click Instant Test (Simulation):',
+    noWorkersPrompt: '⚠️ No miners registered. Please enroll a worker in Tab 1 first.',
+    instantGateInBtn: 'Instant Gate-In',
+    turnstileUnlocked: 'TURNSTILE GATE UNLOCKED (ENTRY OPEN)',
+    liveCameraActive: 'LIVE CAMERA SCANNING',
+    standby: 'STANDBY',
+    clearAlert: 'Clear Alert / Scan Again',
+    auditBadge: 'DGMS RULE 77B AUDIT',
+    actionLabel: 'ACTION:',
+    workerNameLabel: 'WORKER NAME:',
+    labourIdLabel: 'LABOUR ID:',
+    collieryLabel: 'COLLIERY & SEAM:',
+    timestampLabel: 'GATE-IN TIMESTAMP:',
+    preshiftVitalsLabel: 'Pre-Shift Vitals:',
+    arScoreLabel: 'Vocational AR Score:',
+    authenticBadge: '100% AUTHENTIC',
 
     // Tab 3: Monitor
     monitorTitle: 'Subterranean Mine 2D Digital Twin & Personnel Tracker',
@@ -151,11 +173,32 @@ const DASHBOARD_TEXTS = {
     scanBtn: 'स्कैन करें',
     resultTitle: 'सत्यापन रसीद',
     noScans: 'कोई हालिया स्कैन नहीं हुआ है',
-    noScansSub: 'बाईं ओर से श्रमिक चुनकर "स्कैन करें" दबाएं',
+    noScansSub: 'बाईं ओर से श्रमिक चुनकर स्कैन करें या QR कोड दिखाएं',
     approvedIn: '✓ गेट-इन स्वीकृत (भूमिगत)',
     approvedOut: '✓ गेट-आउट पूर्ण (सतह पर)',
     statutoryAudit: 'वैधानिक ऑडिट: डीजीएमएस अनुपालन',
     tamperProof: 'अपरिवर्तनीय डिजिटल रजिस्टर',
+    startCameraBtn: '📸 कैमरा चालू करें',
+    stopCameraBtn: 'कैमरा बंद करें',
+    uploadQrBtn: '📁 QR फोटो अपलोड',
+    cameraHint: 'फोन से QR कोड की फोटो लेकर लैपटॉप कैमरे के सामने दिखाएं या सीधे फोटो अपलोड करें।',
+    liveScanningText: 'फोन का QR कोड कैमरे के सामने रखें... (स्कैनिंग)',
+    instantFallback: 'या 1-क्लिक टेस्ट करें (Instant Fallback):',
+    noWorkersPrompt: '⚠️ कोई श्रमिक पंजीकृत नहीं है। कृपया पहले टैब-1 से नया श्रमिक जोड़ें।',
+    instantGateInBtn: 'त्वरित प्रवेश (Instant Gate-In)',
+    turnstileUnlocked: 'प्रवेश द्वार खुला (TURNSTILE UNLOCKED)',
+    liveCameraActive: 'लाइव कैमरा चालू',
+    standby: 'स्टैंडबाय',
+    clearAlert: 'अलर्ट हटाएं / पुनः स्कैन करें',
+    auditBadge: 'डीजीएमएस नियम 77B ऑडिट',
+    actionLabel: 'कार्रवाई:',
+    workerNameLabel: 'श्रमिक का नाम:',
+    labourIdLabel: 'लेबर आईडी:',
+    collieryLabel: 'कोलियरी एवं सीम:',
+    timestampLabel: 'प्रवेश समय:',
+    preshiftVitalsLabel: 'प्री-शिफ्ट स्वास्थ्य पैरामीटर:',
+    arScoreLabel: 'व्यावसायिक AR स्कोर:',
+    authenticBadge: '100% प्रामाणिक',
 
     // Tab 3: Monitor
     monitorTitle: 'भूमिगत खदान 2D डिजिटल ट्विन एवं कार्मिक ट्रैकर',
@@ -238,11 +281,32 @@ const DASHBOARD_TEXTS = {
     scanBtn: 'ᱥᱠᱮᱱ ᱢᱮ',
     resultTitle: 'ᱯᱚᱨᱚᱠ ᱨᱟᱹᱥᱤᱫ',
     noScans: 'ᱱᱤᱛᱚᱜ ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱥᱠᱮᱱ ᱟᱠᱟᱱᱟ',
-    noScansSub: 'ᱞᱮᱸᱜᱟ ᱯᱟᱦᱴᱟ ᱠᱷᱚᱱ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱵᱟᱪᱷᱟᱣ ᱠᱟᱛᱮ "ᱥᱠᱮᱱ ᱢᱮ" ᱚᱛᱟᱭ ᱢᱮ',
+    noScansSub: 'ᱞᱮᱸᱜᱟ ᱯᱟᱦᱴᱟ ᱠᱷᱚᱱ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱵᱟᱪᱷᱟᱣ ᱠᱟᱛᱮ ᱥᱠᱮᱱ ᱢᱮ',
     approvedIn: '✓ ᱵᱚᱞᱚᱱ ᱪᱷᱟᱹᱲ ᱧᱟᱢᱮᱱᱟ (ᱚᱛ ᱞᱟᱛᱟᱨ)',
     approvedOut: '✓ ᱵᱟᱦᱨᱮ ᱚᱰᱚᱠ ᱥᱟᱹᱛ ᱮᱱᱟ (ᱪᱮᱛᱟᱱ ᱨᱮ)',
     statutoryAudit: 'DGMS ᱠᱚᱢᱯᱞᱟᱭᱟᱱᱥ',
     tamperProof: 'ᱰᱤᱡᱤᱴᱟᱞ ᱨᱮᱡᱤᱥᱴᱟᱨ',
+    startCameraBtn: '📸 ᱠᱮᱢᱨᱟ ᱮᱦᱚᱵᱽ ᱢᱮ',
+    stopCameraBtn: 'ᱠᱮᱢᱨᱟ ᱵᱚᱸᱫᱽ ᱢᱮ',
+    uploadQrBtn: '📁 QR ᱪᱤᱛᱟᱹᱨ ᱟᱯᱞᱳᱰ',
+    cameraHint: 'ᱠᱮᱢᱨᱟ ᱥᱟᱢᱟᱝ ᱨᱮ QR ᱪᱤᱛᱟᱹᱨ ᱩᱫᱩᱜ ᱢᱮ ᱥᱮ ᱟᱯᱞᱳᱰ ᱢᱮ᱾',
+    liveScanningText: 'ᱠᱮᱢᱨᱟ ᱥᱟᱢᱟᱝ ᱨᱮ QR ᱫᱚᱦᱚᱭ ᱢᱮ... (Scanning)',
+    instantFallback: 'ᱥᱮ ᱑-ᱠᱞᱤᱠ ᱛᱮ ᱴᱮᱥᱴ ᱢᱮ (Instant Fallback):',
+    noWorkersPrompt: '⚠️ ᱡᱟᱦᱟᱸᱭ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱵᱟᱝ ᱠᱚ ᱨᱮᱡᱤᱥᱴᱟᱨ ᱟᱠᱟᱱᱟ᱾',
+    instantGateInBtn: 'ᱜᱮᱴ-ᱤᱱ ᱠᱚᱨᱟᱣ ᱢᱮ',
+    turnstileUnlocked: 'ᱜᱮᱴ ᱠᱷᱩᱞᱟᱹᱣᱮᱱᱟ (TURNSTILE UNLOCKED)',
+    liveCameraActive: 'ᱠᱮᱢᱨᱟ ᱪᱟᱹᱞᱩ ᱢᱮᱱᱟᱜ-ᱟ',
+    standby: 'ᱥᱟᱯᱲᱟᱣ',
+    clearAlert: 'ᱟᱨᱦᱚᱸ ᱥᱠᱮᱱ ᱢᱮ',
+    auditBadge: 'DGMS RULE 77B AUDIT',
+    actionLabel: 'ᱠᱟᱹᱢᱤ:',
+    workerNameLabel: 'ᱠᱟᱹᱢᱤᱭᱟᱹ ᱧᱩᱛᱩᱢ:',
+    labourIdLabel: 'ᱞᱮᱵᱚᱨ ID:',
+    collieryLabel: 'ᱠᱷᱟᱫᱟᱱ:',
+    timestampLabel: 'ᱵᱚᱞᱚᱱ ᱚᱠᱛᱚ:',
+    preshiftVitalsLabel: 'ᱦᱚᱲᱢᱚ ᱦᱟᱞᱚᱛ:',
+    arScoreLabel: 'AR ᱥᱠᱳᱨ:',
+    authenticBadge: '100% ᱥᱟᱹᱨᱤ',
 
     // Tab 3: Monitor
     monitorTitle: 'ᱚᱛ ᱞᱟᱛᱟᱨ ᱠᱷᱟᱫᱟᱱ 2D ᱰᱤᱡᱤᱴᱟᱞ ᱴᱣᱤᱱ',
@@ -306,14 +370,114 @@ export default function AdminDashboard({ lang = 'en' }) {
   const [scanError, setScanError] = useState(null);
   const html5QrCodeRef = useRef(null);
   const isProcessingRef = useRef(false);
+  const jsQrIntervalRef = useRef(null);
 
   // Emergency SOS States
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
   const [hazardType, setHazardType] = useState('CH4_GAS'); // 'CH4_GAS' | 'FIRE'
   const [evacTally, setEvacTally] = useState({ safe: 0, moving: 0, trapped: 0 });
   const [dispatchAlertSent, setDispatchAlertSent] = useState(false);
+  const [emergencyInfo, setEmergencyInfo] = useState(null);
+
+  // 6 Live Subterranean Miners Roster for PDR Mine Map
+  const INITIAL_UNDERGROUND_MINERS = [
+    { id: 'JH-BCCL-6858', name: 'Shreyash Jaiswal', trade: 'Coal Face Driller', seam: 4, minX: 230, maxX: 460, x: 340, y: 284, dir: 1, spo2: 97, hr: 74, depth: '320m' },
+    { id: 'JH-BCCL-7741', name: 'Somra Marandi', trade: 'Roof Bolter', seam: 4, minX: 320, maxX: 530, x: 440, y: 284, dir: -1, spo2: 98, hr: 78, depth: '320m' },
+    { id: 'JH-BCCL-8820', name: 'Ramesh Kumar', trade: 'Blaster', seam: 2, minX: 240, maxX: 420, x: 310, y: 162, dir: 1, spo2: 96, hr: 82, depth: '280m' },
+    { id: 'JH-BCCL-1088', name: 'Suresh Bauri', trade: 'Loader Operator', seam: 2, minX: 360, maxX: 560, x: 480, y: 162, dir: -1, spo2: 95, hr: 84, depth: '280m' },
+    { id: 'JH-BCCL-5512', name: 'Vikram Soren', trade: 'Ventilation Steward', seam: 4, minX: 520, maxX: 640, x: 580, y: 284, dir: 1, spo2: 99, hr: 72, depth: '310m' },
+    { id: 'JH-BCCL-3390', name: 'Anil Murmu', trade: 'Safety Escort', seam: 2, minX: 210, maxX: 310, x: 260, y: 162, dir: 1, spo2: 98, hr: 75, depth: '280m' }
+  ];
+
+  const [undergroundMiners, setUndergroundMiners] = useState(INITIAL_UNDERGROUND_MINERS);
+  const [selectedMinerInspector, setSelectedMinerInspector] = useState(null);
+
+  // Live PDR Movement Loop for 6 Underground Miners
+  useEffect(() => {
+    const moveTimer = setInterval(() => {
+      setUndergroundMiners(prev => prev.map(m => {
+        if (isEmergencyActive) {
+          const isTrapped = m.id === (emergencyInfo?.workerId || 'JH-BCCL-6858') || m.id === 'JH-BCCL-1088';
+          if (isTrapped) return m;
+
+          const targetX = 540 + (m.seam === 2 ? 15 : 0);
+          const targetY = 260;
+          const dx = targetX - m.x;
+          const dy = targetY - m.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 10) return { ...m, x: targetX, y: targetY };
+          return {
+            ...m,
+            x: Math.round(m.x + (dx / dist) * 14),
+            y: Math.round(m.y + (dy / dist) * 14)
+          };
+        }
+
+        let nextDir = m.dir;
+        let nextX = m.x + m.dir * 14;
+        if (nextX >= m.maxX) {
+          nextX = m.maxX;
+          nextDir = -1;
+        } else if (nextX <= m.minX) {
+          nextX = m.minX;
+          nextDir = 1;
+        }
+        return {
+          ...m,
+          x: nextX,
+          dir: nextDir
+        };
+      }));
+    }, 1400);
+
+    return () => clearInterval(moveTimer);
+  }, [isEmergencyActive, emergencyInfo]);
+
+  const adminAudioCtxRef = useRef(null);
+  const sirenIntervalRef = useRef(null);
 
   const T = DASHBOARD_TEXTS[lang] || DASHBOARD_TEXTS.en;
+
+  const startAdminSiren = () => {
+    try {
+      if (!adminAudioCtxRef.current) {
+        adminAudioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      const ctx = adminAudioCtxRef.current;
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const playWail = () => {
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(450, ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(950, ctx.currentTime + 0.35);
+          osc.frequency.linearRampToValueAtTime(450, ctx.currentTime + 0.7);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.1);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 1.2);
+        } catch {}
+      };
+
+      playWail();
+      if (!sirenIntervalRef.current) {
+        sirenIntervalRef.current = setInterval(playWail, 1300);
+      }
+    } catch {}
+  };
+
+  const stopAdminSiren = () => {
+    if (sirenIntervalRef.current) {
+      clearInterval(sirenIntervalRef.current);
+      sirenIntervalRef.current = null;
+    }
+  };
 
   // Load from Master Ledger API & Polling Sync
   const loadMiners = async () => {
@@ -333,44 +497,69 @@ export default function AdminDashboard({ lang = 'en' }) {
 
   useEffect(() => {
     loadMiners();
+
+    const syncEmergency = async () => {
+      try {
+        const em = await fetchEmergencyStatus();
+        if (em && em.active) {
+          setEmergencyInfo(em);
+          setIsEmergencyActive(prev => {
+            if (!prev) {
+              startAdminSiren();
+              setHazardType(em.hazard || 'CH4_GAS');
+              setEvacTally({ safe: 3, moving: 1, trapped: 1 });
+            }
+            return true;
+          });
+        } else if (em && em.active === false) {
+          stopAdminSiren();
+          setIsEmergencyActive(false);
+          setEmergencyInfo(null);
+        }
+      } catch {}
+    };
+
+    syncEmergency();
     // Real-time synchronization interval across tabs & ports
-    const pollId = setInterval(loadMiners, 3000);
-    return () => clearInterval(pollId);
+    const pollId = setInterval(() => {
+      loadMiners();
+      syncEmergency();
+    }, 2500);
+    return () => {
+      clearInterval(pollId);
+      stopAdminSiren();
+    };
   }, []);
 
-
-  const playSiren = () => {
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-      osc.frequency.linearRampToValueAtTime(880, audioCtx.currentTime + 0.4);
-      osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.8);
-      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 1.2);
-    } catch {
-      // audio context
-    }
-  };
-
-  const handleTriggerSOS = (type) => {
-    playSiren();
+  const handleTriggerSOS = async (type) => {
+    startAdminSiren();
     setIsEmergencyActive(true);
     setHazardType(type);
     setDispatchAlertSent(false);
     setEvacTally({ safe: 3, moving: 1, trapped: 1 });
+
+    const info = {
+      active: true,
+      triggeredBy: 'Surface Command Console (Admin)',
+      workerId: 'ADMIN-CTRL',
+      hazard: type,
+      location: type === 'CH4_GAS' ? 'Seam 4 Longwall Coal Face' : 'Trunk Conveyor Belt #2',
+      time: new Date().toLocaleTimeString()
+    };
+    setEmergencyInfo(info);
+
+    await postEmergencyAction(info);
   };
 
-  const handleClearSOS = () => {
+  const handleClearSOS = async () => {
+    stopAdminSiren();
     playIndustrialBeep(880, 100);
     setIsEmergencyActive(false);
     setDispatchAlertSent(false);
+    setEmergencyInfo(null);
+
+    await postEmergencyAction({ active: false });
+    await postMinerAction({ action: 'clearSOS' });
   };
 
   const handleDispatchRescue = () => {
@@ -493,12 +682,16 @@ export default function AdminDashboard({ lang = 'en' }) {
       healthClearance: 'SpO2 97% • Pulse 82 BPM • Alertness 98%',
       arScore: 'CAS 94% (Fire PASS • Gas PASS)',
       isAuthentic: true,
-      turnstile: 'UNLOCKED (हरित द्वार खुला)'
+      turnstile: T.turnstileUnlocked || 'TURNSTILE GATE UNLOCKED'
     });
   };
 
-  // Optical Camera Controller
+  // Optical Camera Controller (Triple-Engine: native BarcodeDetector + html5-qrcode + jsQR with Glare Compensator)
   const stopCamera = async () => {
+    if (jsQrIntervalRef.current) {
+      clearInterval(jsQrIntervalRef.current);
+      jsQrIntervalRef.current = null;
+    }
     if (html5QrCodeRef.current) {
       try {
         if (html5QrCodeRef.current.isScanning) {
@@ -524,7 +717,7 @@ export default function AdminDashboard({ lang = 'en' }) {
           return;
         }
 
-        // Enable hardware-accelerated Chromium BarcodeDetector for 0.1s instant detection
+        // Enable hardware-accelerated Chromium BarcodeDetector
         const html5QrCode = new Html5Qrcode('qr-reader-viewport', {
           verbose: false,
           experimentalFeatures: {
@@ -533,7 +726,6 @@ export default function AdminDashboard({ lang = 'en' }) {
         });
         html5QrCodeRef.current = html5QrCode;
 
-        // Try getting cameras directly to bypass laptop facingMode limitations
         let cameraIdOrConfig = { facingMode: 'user' };
         try {
           const cameras = await Html5Qrcode.getCameras();
@@ -544,27 +736,99 @@ export default function AdminDashboard({ lang = 'en' }) {
           cameraIdOrConfig = { facingMode: 'user' };
         }
 
-        // Full-frame scanning without restrictive qrbox crop
         const scanConfig = {
-          fps: 15,
-          disableFlip: false
+          fps: 20,
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            return {
+              width: Math.max(200, Math.floor(minEdge * 0.85)),
+              height: Math.max(200, Math.floor(minEdge * 0.85))
+            };
+          },
+          aspectRatio: 1.0,
+          videoConstraints: {
+            facingMode: 'user',
+            width: { min: 640, ideal: 1280 },
+            height: { min: 480, ideal: 720 }
+          }
         };
 
+        // Engine 1: Primary Html5Qrcode (ZXing / BarcodeDetector in Worker)
         await html5QrCode.start(
           cameraIdOrConfig,
           scanConfig,
           (decodedText) => {
             handleDecodedQr(decodedText);
           },
-          () => {
-            // Ignore ongoing frame decode errors
-          }
+          () => {}
         );
+
+        // Native Browser BarcodeDetector (Chromium / Edge 5ms instant scan)
+        const nativeDetector = ('BarcodeDetector' in window) 
+          ? new window.BarcodeDetector({ formats: ['qr_code'] })
+          : null;
+
+        // Engine 2 & 3: Ultra-Sensitive jsQR Loop on raw video frames + Anti-Glare Contrast Processor
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const decodeQr = typeof jsQR === 'function' ? jsQR : (jsQR?.default || jsQR);
+
+        jsQrIntervalRef.current = setInterval(async () => {
+          if (isProcessingRef.current) return;
+          const video = document.querySelector('#qr-reader-viewport video');
+          if (!video || video.readyState < 2) return;
+
+          // Check Native BarcodeDetector first (fastest, hardware accelerated)
+          if (nativeDetector) {
+            try {
+              const barcodes = await nativeDetector.detect(video);
+              if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+                handleDecodedQr(barcodes[0].rawValue);
+                return;
+              }
+            } catch {
+              // ignore native detector error
+            }
+          }
+
+          const w = video.videoWidth;
+          const h = video.videoHeight;
+          if (!w || !h || !decodeQr) return;
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(video, 0, 0, w, h);
+          try {
+            const imgData = ctx.getImageData(0, 0, w, h);
+            
+            // Pass 1: Standard scan with inversion attempts
+            let code = decodeQr(imgData.data, w, h, { inversionAttempts: 'attemptBoth' });
+            
+            // Pass 2: High-contrast binarization if phone screen glare is washing out modules
+            if (!code) {
+              const d = imgData.data;
+              for (let i = 0; i < d.length; i += 4) {
+                const gray = (d[i] * 77 + d[i+1] * 150 + d[i+2] * 29) >> 8;
+                const val = gray > 140 ? 255 : (gray < 85 ? 0 : (gray - 85) * 4.6);
+                d[i] = val;
+                d[i+1] = val;
+                d[i+2] = val;
+              }
+              code = decodeQr(d, w, h, { inversionAttempts: 'attemptBoth' });
+            }
+
+            if (code && code.data) {
+              handleDecodedQr(code.data);
+            }
+          } catch {
+            // ignore frame read error
+          }
+        }, 100);
+
       } catch (err) {
         console.error("Camera access failed:", err);
         setScanError({
-          title: 'कैमरा एरर (Camera Access Issue)',
-          reason: err?.message || 'कृपया ब्राउज़र में कैमरा परमिशन Allow करें या नीचे दिए गए Instant बटन से टेस्ट करें।',
+          title: lang === 'en' ? 'Camera Error' : 'कैमरा एरर',
+          reason: err?.message || (lang === 'en' ? 'Please allow camera permission in browser.' : 'कृपया ब्राउज़र में कैमरा परमिशन Allow करें या नीचे दिए गए Instant बटन से टेस्ट करें।'),
           raw: 'PERMISSION_OR_CAMERA_ERROR',
           timestamp: new Date().toLocaleTimeString()
         });
@@ -573,7 +837,7 @@ export default function AdminDashboard({ lang = 'en' }) {
     }, 250);
   };
 
-  // Scan directly from an uploaded QR photo / image file
+  // Scan directly from an uploaded QR photo / image file (with dual-engine fallback)
   const handleScanFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -584,11 +848,38 @@ export default function AdminDashboard({ lang = 'en' }) {
       handleDecodedQr(decodedText);
       html5QrCode.clear();
     } catch (err) {
-      console.warn("File QR scan error:", err);
+      console.warn("File QR scan error with html5-qrcode, trying jsQR fallback:", err);
+      try {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.src = url;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+        const c = document.createElement('canvas');
+        c.width = img.width;
+        c.height = img.height;
+        const cx = c.getContext('2d');
+        cx.drawImage(img, 0, 0);
+        const idata = cx.getImageData(0, 0, c.width, c.height);
+        const decodeQr = typeof jsQR === 'function' ? jsQR : (jsQR?.default || jsQR);
+        const code = decodeQr(idata.data, c.width, c.height, { inversionAttempts: 'attemptBoth' });
+        URL.revokeObjectURL(url);
+        if (code && code.data) {
+          handleDecodedQr(code.data);
+          return;
+        }
+      } catch (fallbackErr) {
+        console.warn("jsQR file fallback error:", fallbackErr);
+      }
+
       playIndustrialBeep(220, 350);
       setScanError({
-        title: '🚨 QR डिटेक्ट नहीं हुआ (QR Code Not Recognized)',
-        reason: 'कृपया स्पष्ट QR कोड वाली फोटो चुनें या नीचे दिए गए Instant Gate-In बटन से टेस्ट करें।',
+        title: lang === 'en' ? '🚨 QR Not Detected' : '🚨 QR डिटेक्ट नहीं हुआ (QR Code Not Recognized)',
+        reason: lang === 'en' 
+          ? 'Please select a clear photo of the QR code or use the Instant Gate-In button below.' 
+          : 'कृपया स्पष्ट QR कोड वाली फोटो चुनें या नीचे दिए गए Instant Gate-In बटन से टेस्ट करें।',
         raw: err?.message || 'DECODE_ERROR',
         timestamp: new Date().toLocaleTimeString()
       });
@@ -723,7 +1014,7 @@ export default function AdminDashboard({ lang = 'en' }) {
       healthClearance: vitalsFormatted,
       arScore: `CAS: ${parsed.score}% (Fire PASS • Gas PASS)`,
       isAuthentic: true,
-      turnstile: 'UNLOCKED (हरित द्वार खुला)'
+      turnstile: T.turnstileUnlocked || 'TURNSTILE GATE UNLOCKED'
     });
 
     setTimeout(() => {
@@ -731,7 +1022,7 @@ export default function AdminDashboard({ lang = 'en' }) {
     }, 3000);
   };
 
-  const undergroundCount = workersList.filter(w => w.status === 'UNDERGROUND').length;
+  const undergroundCount = Math.max(workersList.filter(w => w.status === 'UNDERGROUND').length, undergroundMiners.length);
   const surfaceCount = workersList.filter(w => w.status === 'SURFACE').length;
 
   const filteredWorkers = workersList.filter(w => 
@@ -783,6 +1074,44 @@ export default function AdminDashboard({ lang = 'en' }) {
         </div>
       </div>
 
+      {/* GLOBAL EMERGENCY ALERT BANNER (VISIBLE ON ALL TABS) */}
+      {isEmergencyActive && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-2xl shadow-red-600/50 border-2 border-red-300 flex flex-col sm:flex-row items-center justify-between gap-3 animate-bounce-short">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-white/20 border border-white/40 flex items-center justify-center shrink-0">
+              <Siren className="w-7 h-7 text-white animate-spin" />
+            </div>
+            <div>
+              <div className="text-xs font-mono font-black tracking-widest text-amber-300 uppercase flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-300 animate-ping" />
+                <span>🚨 LIVE SUBTERRANEAN HAZARD ALERT BROADCAST RECEIVED</span>
+              </div>
+              <div className="text-sm sm:text-base font-black text-white mt-0.5">
+                {emergencyInfo?.triggeredBy || 'Underground Worker'} reported {emergencyInfo?.hazard === 'FIRE' ? '🔥 Conveyor Belt Fire' : '💥 CH₄ Methane Gas Spike'} at {emergencyInfo?.location || 'Seam 4 Longwall Face'}!
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab('sos')}
+              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-white hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-lg shrink-0 cursor-pointer"
+            >
+              🚨 Open SOS Console & Dispatch SAR →
+            </button>
+            <button
+              type="button"
+              onClick={stopAdminSiren}
+              className="px-3 py-2.5 rounded-xl bg-black/40 hover:bg-black/60 text-white font-mono text-xs transition border border-white/20 cursor-pointer"
+              title="Mute Siren Audio"
+            >
+              Mute Siren
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 4 MAIN OPERATIONAL TABS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 p-1.5 bg-[#0C101A] rounded-2xl border border-slate-800 shadow-lg">
         <button
@@ -825,14 +1154,16 @@ export default function AdminDashboard({ lang = 'en' }) {
           onClick={() => { playIndustrialBeep(1200, 80); setActiveTab('sos'); }}
           className={`p-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition ${
             activeTab === 'sos'
-              ? 'bg-red-500 text-white shadow-md shadow-red-500/30'
+              ? (isEmergencyActive 
+                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white font-black shadow-lg shadow-red-600/50' 
+                  : 'bg-red-500 text-white shadow-md shadow-red-500/30')
               : isEmergencyActive 
-              ? 'bg-red-500/20 border border-red-500 text-red-300 animate-pulse'
+              ? 'bg-red-600 text-white border-2 border-red-300 shadow-xl shadow-red-600/50 animate-pulse font-black'
               : 'text-red-400 hover:text-red-300 hover:bg-red-500/10'
           }`}
         >
-          <Siren className="w-4 h-4" />
-          <span>{T.tabSos}</span>
+          <Siren className={`w-4 h-4 ${isEmergencyActive ? 'animate-spin' : ''}`} />
+          <span>{isEmergencyActive ? '🚨 4. EMERGENCY ACTIVE!' : T.tabSos}</span>
         </button>
       </div>
 
@@ -1115,7 +1446,7 @@ export default function AdminDashboard({ lang = 'en' }) {
                     : 'bg-slate-800 text-slate-400 border border-slate-700'
                 }`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${isCameraActive ? 'bg-emerald-400' : 'bg-slate-500'}`} />
-                  <span>{isCameraActive ? 'LIVE CAMERA SCANNING' : 'STANDBY'}</span>
+                  <span>{isCameraActive ? T.liveCameraActive : T.standby}</span>
                 </span>
               </div>
 
@@ -1159,7 +1490,7 @@ export default function AdminDashboard({ lang = 'en' }) {
 
                     <div className="mt-3 flex items-center gap-2 text-xs font-mono text-emerald-400 animate-pulse">
                       <Camera className="w-4 h-4" />
-                      <span>फोन का QR कोड कैमरे के सामने रखें... (Scanning)</span>
+                      <span>{T.liveScanningText}</span>
                     </div>
 
                     <button
@@ -1168,7 +1499,7 @@ export default function AdminDashboard({ lang = 'en' }) {
                       className="mt-3 py-1.5 px-4 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 text-xs font-bold font-mono flex items-center gap-1.5 transition"
                     >
                       <CameraOff className="w-3.5 h-3.5" />
-                      <span>कैमरा बंद करें (Stop Camera)</span>
+                      <span>{T.stopCameraBtn}</span>
                     </button>
                   </div>
                 ) : (
@@ -1189,12 +1520,12 @@ export default function AdminDashboard({ lang = 'en' }) {
                         className="py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-emerald-500/20 flex items-center gap-2 transition active:scale-95 cursor-pointer uppercase tracking-wider"
                       >
                         <Camera className="w-4 h-4 stroke-[2.5]" />
-                        <span>📸 कैमरा चालू करें</span>
+                        <span>{T.startCameraBtn}</span>
                       </button>
 
                       <label className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-bold text-xs shadow-md flex items-center gap-2 transition active:scale-95 cursor-pointer">
                         <FileText className="w-4 h-4 text-amber-400" />
-                        <span>📁 QR फोटो अपलोड</span>
+                        <span>{T.uploadQrBtn}</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -1207,7 +1538,7 @@ export default function AdminDashboard({ lang = 'en' }) {
                     <div id="qr-reader-file-temp" className="hidden" />
 
                     <p className="text-[11px] text-slate-400 font-mono mt-3 max-w-xs">
-                      फोन से QR कोड की फोटो लेकर लैपटॉप कैमरे के सामने दिखाएं या सीधे फोटो अपलोड करें।
+                      {T.cameraHint}
                     </p>
                   </div>
                 )}
@@ -1219,13 +1550,13 @@ export default function AdminDashboard({ lang = 'en' }) {
               <div className="flex items-center justify-between mb-2">
                 <label className="text-[11px] font-semibold text-slate-400 font-mono flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>या 1-क्लिक टेस्ट करें (Instant Fallback):</span>
+                  <span>{T.instantFallback}</span>
                 </label>
               </div>
 
               {workersList.length === 0 ? (
                 <div className="p-2.5 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-amber-400/90 font-mono">
-                  ⚠️ कोई श्रमिक पंजीकृत नहीं है। कृपया पहले टैब-1 से नया श्रमिक जोड़ें।
+                  {T.noWorkersPrompt}
                 </div>
               ) : (
                 <div className="flex gap-2">
@@ -1248,7 +1579,7 @@ export default function AdminDashboard({ lang = 'en' }) {
                     title="Simulate instant scan without webcam"
                   >
                     <QrCode className="w-3.5 h-3.5" />
-                    <span>Instant Gate-In</span>
+                    <span>{T.instantGateInBtn}</span>
                   </button>
                 </div>
               )}
@@ -1263,7 +1594,7 @@ export default function AdminDashboard({ lang = 'en' }) {
                   <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   <h2 className="text-base font-bold text-white">{T.resultTitle}</h2>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400">DGMS RULE 77B AUDIT</span>
+                <span className="text-[10px] font-mono text-slate-400">{T.auditBadge}</span>
               </div>
 
               {/* CASE 1: FRAUDULENT / FAKE QR ERROR ALERT */}
@@ -1291,7 +1622,7 @@ export default function AdminDashboard({ lang = 'en' }) {
                     onClick={() => setScanError(null)}
                     className="w-full py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-300 text-xs font-bold font-mono transition"
                   >
-                    Clear Alert / पुनः स्कैन करें
+                    {T.clearAlert}
                   </button>
                 </div>
               )}
@@ -1304,7 +1635,7 @@ export default function AdminDashboard({ lang = 'en' }) {
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
                       <span className="text-xs font-black text-emerald-300 tracking-wide">
-                        {lastScanResult.turnstile || 'TURNSTILE UNLOCKED'}
+                        {lastScanResult.turnstile || T.turnstileUnlocked}
                       </span>
                     </div>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
@@ -1319,19 +1650,19 @@ export default function AdminDashboard({ lang = 'en' }) {
                   {/* Miner Credentials Grid */}
                   <div className="grid grid-cols-2 gap-2 text-xs pt-1">
                     <div className="p-2 rounded-lg bg-black/40 border border-slate-800">
-                      <span className="text-slate-500 block text-[9px]">WORKER NAME:</span>
+                      <span className="text-slate-500 block text-[9px]">{T.workerNameLabel}</span>
                       <span className="font-bold text-white text-sm">{lastScanResult.workerName}</span>
                     </div>
                     <div className="p-2 rounded-lg bg-black/40 border border-slate-800">
-                      <span className="text-slate-500 block text-[9px]">LABOUR ID:</span>
+                      <span className="text-slate-500 block text-[9px]">{T.labourIdLabel}</span>
                       <span className="font-bold text-amber-400 text-sm">{lastScanResult.workerId}</span>
                     </div>
                     <div className="p-2 rounded-lg bg-black/40 border border-slate-800">
-                      <span className="text-slate-500 block text-[9px]">COLLIERY & SEAM:</span>
+                      <span className="text-slate-500 block text-[9px]">{T.collieryLabel}</span>
                       <span className="text-slate-300 text-[11px] truncate">{lastScanResult.colliery}</span>
                     </div>
                     <div className="p-2 rounded-lg bg-black/40 border border-slate-800">
-                      <span className="text-slate-500 block text-[9px]">GATE-IN TIMESTAMP:</span>
+                      <span className="text-slate-500 block text-[9px]">{T.timestampLabel}</span>
                       <span className="text-slate-300 text-[11px]">{lastScanResult.time}</span>
                     </div>
                   </div>
@@ -1344,15 +1675,15 @@ export default function AdminDashboard({ lang = 'en' }) {
                         <span>{lastScanResult.verifiedHash}</span>
                       </span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
-                        100% AUTHENTIC
+                        {T.authenticBadge}
                       </span>
                     </div>
                     <div className="text-[11px] text-slate-300 flex items-center justify-between">
-                      <span className="text-slate-400">Pre-Shift Vitals:</span>
+                      <span className="text-slate-400">{T.preshiftVitalsLabel}</span>
                       <span className="font-bold text-white">{lastScanResult.healthClearance}</span>
                     </div>
                     <div className="text-[11px] text-slate-300 flex items-center justify-between">
-                      <span className="text-slate-400">Vocational AR Score:</span>
+                      <span className="text-slate-400">{T.arScoreLabel}</span>
                       <span className="font-bold text-amber-400">{lastScanResult.arScore}</span>
                     </div>
                   </div>
@@ -1365,7 +1696,7 @@ export default function AdminDashboard({ lang = 'en' }) {
                   <QrCode className="w-10 h-10 text-slate-600 mb-2" />
                   <span className="font-bold text-slate-400">{T.noScans}</span>
                   <span className="text-[11px] text-slate-500 mt-1 max-w-xs">
-                    कैमरा चालू करके फोन से QR कोड दिखाएं या बाईं ओर से Instant Gate-In बटन दबाएं।
+                    {T.noScansSub}
                   </span>
                 </div>
               )}
@@ -1436,49 +1767,122 @@ export default function AdminDashboard({ lang = 'en' }) {
                 </g>
               )}
 
-              {/* Dynamic Underground Personnel */}
-              {workersList.filter(w => w.status === 'UNDERGROUND').length === 0 ? (
-                <g>
-                  <rect x="250" y="200" width="340" height="30" rx="8" fill="#0f172a" stroke="#334155" strokeWidth="1" />
-                  <text x="420" y="219" fill="#94a3b8" fontSize="10" fontFamily="monospace" textAnchor="middle">
-                    [वर्तमान में 0 भूमिगत • गेट स्कैनर से गेट-इन करें]
-                  </text>
-                </g>
-              ) : (
-                workersList.filter(w => w.status === 'UNDERGROUND').map((w, idx) => {
-                  const seam = idx % 2 === 0 ? 4 : 2;
-                  const yBase = seam === 4 ? 280 : 160;
-                  const xBase = 260 + (idx * 110) % 360;
-                  const isTrapped = isEmergencyActive && idx === 0;
-                  const targetX = isEmergencyActive ? (isTrapped ? xBase : 540 + (idx * 18)) : xBase;
-                  const targetY = isEmergencyActive ? (isTrapped ? yBase : 258 + (idx * 8)) : yBase;
+              {/* Dynamic 6 Underground Personnel with Real-time PDR Telemetry */}
+              {undergroundMiners.map((m) => {
+                const isTrapped = isEmergencyActive && (m.id === (emergencyInfo?.workerId || 'JH-BCCL-6858') || m.id === 'JH-BCCL-1088');
+                const isSelected = selectedMinerInspector?.id === m.id;
 
-                  return (
-                    <g key={w.id} transform={`translate(${targetX}, ${targetY})`} className="transition-all duration-1000">
+                return (
+                  <g 
+                    key={m.id} 
+                    transform={`translate(${m.x}, ${m.y})`} 
+                    className="transition-all duration-1000 ease-linear cursor-pointer group"
+                    onClick={() => setSelectedMinerInspector(m)}
+                  >
+                    {/* Selected halo */}
+                    {isSelected && (
+                      <circle cx="0" cy="0" r="14" fill="none" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3,3" />
+                    )}
+                    
+                    {/* Live Green Dot with Ping */}
+                    <circle 
+                      cx="0" 
+                      cy="0" 
+                      r={isSelected ? "8" : "7"} 
+                      fill={isEmergencyActive ? (isTrapped ? "#ef4444" : "#10b981") : "#10b981"} 
+                      stroke="#ffffff" 
+                      strokeWidth="2" 
+                      className={isTrapped ? "animate-ping" : ""}
+                    />
+
+                    {/* Subtle pulse ring around active miners */}
+                    {!isEmergencyActive && (
                       <circle 
                         cx="0" 
                         cy="0" 
-                        r="7" 
-                        fill={isEmergencyActive ? (isTrapped ? "#ef4444" : "#10b981") : "#f59e0b"} 
-                        stroke="#ffffff" 
-                        strokeWidth="2" 
-                        className={isTrapped ? "animate-ping" : ""}
+                        r="13" 
+                        fill="none" 
+                        stroke="#10b981" 
+                        strokeWidth="1.5" 
+                        className="animate-ping" 
+                        opacity="0.35" 
                       />
-                      <text x="10" y="4" fill={isTrapped ? "#f87171" : "#ffffff"} fontSize="9" fontFamily="sans-serif" fontWeight="bold">
-                        {w.name.split(' ')[0]} ({w.id.replace('JH-', '')})
-                        {isTrapped ? ' ⚠️ TRAPPED' : ''}
-                      </text>
-                    </g>
-                  );
-                })
-              )}
+                    )}
+
+                    {/* Name Pill Badge */}
+                    <rect 
+                      x="10" 
+                      y="-10" 
+                      width={isTrapped ? "130" : "105"} 
+                      height="20" 
+                      rx="4" 
+                      fill="rgba(15, 23, 42, 0.88)" 
+                      stroke={isTrapped ? "#ef4444" : (isSelected ? "#38bdf8" : "#334155")} 
+                      strokeWidth="1" 
+                    />
+                    <text 
+                      x="14" 
+                      y="4" 
+                      fill={isTrapped ? "#f87171" : (isSelected ? "#38bdf8" : "#f1f5f9")} 
+                      fontSize="9" 
+                      fontFamily="monospace" 
+                      fontWeight="bold"
+                    >
+                      {m.name.split(' ')[0]} {isTrapped ? '⚠️ TRAPPED' : `(${m.id.replace('JH-BCCL-', '')})`}
+                    </text>
+                  </g>
+                );
+              })}
             </svg>
+
+            {/* Interactive Subterranean Miner Inspector Card */}
+            {selectedMinerInspector && (
+              <div className="mt-3 p-3.5 rounded-xl bg-slate-900/95 border border-sky-500/50 text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-xl shrink-0">
+                    👷
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-white text-sm">{selectedMinerInspector.name}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-bold">
+                        {selectedMinerInspector.id}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                      <span>{selectedMinerInspector.trade}</span>
+                      <span>•</span>
+                      <span className="text-amber-400">Seam {selectedMinerInspector.seam} ({selectedMinerInspector.depth})</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-[11px] flex-wrap">
+                  <div className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">
+                    <span className="text-slate-500 block text-[9px]">PULSE / SPO2</span>
+                    <span className="text-emerald-400 font-bold">{selectedMinerInspector.hr} BPM • {selectedMinerInspector.spo2}%</span>
+                  </div>
+                  <div className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">
+                    <span className="text-slate-500 block text-[9px]">TELEMETRY (PDR)</span>
+                    <span className="text-cyan-400 font-bold">X: {selectedMinerInspector.x}, Y: {selectedMinerInspector.y}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMinerInspector(null)}
+                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition px-2.5"
+                    title="Close Inspector"
+                  >
+                    ✕ Close
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="mt-4 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono">
               <div className="flex items-center gap-4 flex-wrap">
-                <span className="flex items-center gap-1.5 text-amber-400">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                  {T.legendActive}
+                <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  6 {T.legendActive}
                 </span>
                 <span className="flex items-center gap-1.5 text-emerald-400">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
@@ -1565,6 +1969,29 @@ export default function AdminDashboard({ lang = 'en' }) {
             </div>
           ) : (
             <div className="space-y-4">
+              {/* LIVE INCIDENT CALL BANNER */}
+              {emergencyInfo && (
+                <div className="p-4 rounded-xl bg-red-950/60 border-2 border-red-500/80 flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center shrink-0 text-red-400">
+                      <Siren className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-red-300 flex items-center gap-2">
+                        <span>LIVE INCIDENT CALL: {emergencyInfo.hazard === 'FIRE' ? '🔥 CONVEYOR BELT FIRE' : '💥 CH₄ METHANE GAS SPIKE'}</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500 text-slate-950 font-black">CRITICAL</span>
+                      </div>
+                      <div className="text-slate-300 text-[11px] mt-0.5">
+                        TRANSMITTED BY: <strong className="text-white">{emergencyInfo.triggeredBy}</strong> ({emergencyInfo.workerId || 'JH-BCCL-6858'}) • SECTOR: {emergencyInfo.location || 'Seam 4 Longwall Face'}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/30 whitespace-nowrap">
+                    TIMESTAMP: {emergencyInfo.time}
+                  </span>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40 flex items-center justify-between">
                   <div>
@@ -1588,7 +2015,9 @@ export default function AdminDashboard({ lang = 'en' }) {
                   <div>
                     <div className="text-[11px] font-mono text-red-400 font-bold">{T.tallyTrapped}</div>
                     <div className="text-3xl font-black text-red-400 mt-1">{evacTally.trapped} / 5</div>
-                    <div className="text-[10px] text-red-300 font-bold mt-1">{T.tallyTrappedSub}</div>
+                    <div className="text-[10px] text-red-300 font-bold mt-1">
+                      {emergencyInfo?.triggeredBy ? `${emergencyInfo.triggeredBy} (${emergencyInfo.workerId || 'JH-BCCL-6858'}) Seam 4` : T.tallyTrappedSub}
+                    </div>
                   </div>
                   <ShieldAlert className="w-8 h-8 text-red-400 shrink-0 animate-ping" />
                 </div>
@@ -1601,7 +2030,7 @@ export default function AdminDashboard({ lang = 'en' }) {
                     <span>{T.rescueStation}</span>
                   </div>
                   <p className="text-xs text-slate-300 mt-0.5 font-mono">
-                    {T.sarCoords}
+                    Targeted SAR Coordinates: Seam-4, Crosscut-12, Pillar-B (Depth: 320m). Trapped Worker: {emergencyInfo?.triggeredBy || 'Shreyash Jaiswal'}.
                   </p>
                 </div>
 

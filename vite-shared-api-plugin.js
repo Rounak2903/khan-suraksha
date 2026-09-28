@@ -81,6 +81,36 @@ export function sharedMinersApiPlugin() {
                   current[id].location = location;
                   current[id].lastScan = lastScan;
                 }
+              } else if (payload.action === 'triggerSOS') {
+                const { id, workerName, hazard, location } = payload;
+                if (id && current[id]) {
+                  current[id].sosActive = true;
+                  current[id].sosHazard = hazard || 'CH4_GAS';
+                  current[id].sosTime = new Date().toLocaleTimeString();
+                  current[id].status = 'TRAPPED / CRITICAL';
+                  current[id].location = location || 'Seam 4 - Active Longwall Face';
+                }
+                const emFile = path.resolve(DATA_DIR, 'emergency.json');
+                fs.writeFileSync(emFile, JSON.stringify({
+                  active: true,
+                  triggeredBy: workerName || id || 'Underground Worker',
+                  workerId: id,
+                  hazard: hazard || 'CH4_GAS',
+                  time: new Date().toLocaleTimeString()
+                }, null, 2), 'utf-8');
+              } else if (payload.action === 'clearSOS') {
+                Object.values(current).forEach(w => {
+                  delete w.sosActive;
+                  delete w.sosHazard;
+                  delete w.sosTime;
+                  if (w.status === 'TRAPPED / CRITICAL') {
+                    w.status = 'UNDERGROUND';
+                  }
+                });
+                const emFile = path.resolve(DATA_DIR, 'emergency.json');
+                if (fs.existsSync(emFile)) {
+                  fs.writeFileSync(emFile, JSON.stringify({ active: false }, null, 2), 'utf-8');
+                }
               } else if (payload.action === 'clearAll') {
                 current = {};
               }
@@ -94,8 +124,55 @@ export function sharedMinersApiPlugin() {
           });
           return;
         }
+      });
 
-        next();
+      // Dedicated /api/emergency endpoint for instantaneous two-way SOS broadcast
+      server.middlewares.use('/api/emergency', (req, res) => {
+        if (!fs.existsSync(DATA_DIR)) {
+          fs.mkdirSync(DATA_DIR, { recursive: true });
+        }
+        const emFile = path.resolve(DATA_DIR, 'emergency.json');
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+        if (req.method === 'OPTIONS') {
+          res.statusCode = 204;
+          res.end();
+          return;
+        }
+
+        if (req.method === 'GET') {
+          try {
+            if (fs.existsSync(emFile)) {
+              const raw = fs.readFileSync(emFile, 'utf-8');
+              res.end(raw || JSON.stringify({ active: false }));
+            } else {
+              res.end(JSON.stringify({ active: false }));
+            }
+          } catch {
+            res.end(JSON.stringify({ active: false }));
+          }
+          return;
+        }
+
+        if (req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => { body += chunk; });
+          req.on('end', () => {
+            try {
+              const payload = JSON.parse(body || '{}');
+              fs.writeFileSync(emFile, JSON.stringify(payload, null, 2), 'utf-8');
+              res.end(JSON.stringify({ success: true, emergency: payload }));
+            } catch (err) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+          });
+          return;
+        }
       });
     }
   };

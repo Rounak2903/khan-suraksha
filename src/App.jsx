@@ -1,25 +1,131 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import LanguageSelection from './components/auth/LanguageSelection';
 import PitHeadLogin from './components/auth/PitHeadLogin';
 import HealthCheckup from './components/health/HealthCheckup';
 import ARCameraViewport from './components/ar/ARCameraViewport';
 import CertificateCard from './components/assessment/CertificateCard';
+import WorkerShiftCompanion from './components/shift/WorkerShiftCompanion';
 import AdminDashboard from './components/dashboard/AdminDashboard';
 import { translations } from './data/translations';
 import { Flame, Wind, Award, LogOut } from 'lucide-react';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("KhanSuraksha ErrorBoundary caught error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full max-w-lg p-6 rounded-2xl bg-slate-900 border border-red-500/50 text-center space-y-4 my-8 font-mono">
+          <div className="text-3xl">⚠️</div>
+          <h3 className="text-base font-bold text-white">Component Auto-Recovery</h3>
+          <p className="text-xs text-slate-400">
+            {this.state.error?.message || 'An unexpected error occurred.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              if (this.props.onReset) this.props.onReset();
+              else window.location.reload();
+            }}
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-bold text-xs transition"
+          >
+            🔄 Reload & Continue Shift
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   const [activeView, setActiveView] = useState('worker'); // 'worker' | 'admin'
-  const [workerStep, setWorkerStep] = useState('language'); // 'language' | 'login' | 'health' | 'training'
-  const [currentWorker, setCurrentWorker] = useState(null);
-  const [lang, setLang] = useState('hi'); // 'hi' | 'sat' | 'en'
+  const [workerStep, setWorkerStep] = useState(() => {
+    try {
+      return localStorage.getItem('khan_suraksha_worker_step') || 'language';
+    } catch {
+      return 'language';
+    }
+  });
+  const [currentWorker, setCurrentWorker] = useState(() => {
+    try {
+      const saved = localStorage.getItem('khan_suraksha_current_worker');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [lang, setLang] = useState(() => {
+    try {
+      return localStorage.getItem('khan_suraksha_lang') || 'hi';
+    } catch {
+      return 'hi';
+    }
+  });
   const [soundEnabled, setSoundEnabled] = useState(true);
   
   // Worker Module States
   const [selectedModule, setSelectedModule] = useState(1); // 1 = Fire PASS, 2 = Gas Leak
-  const [completedModules, setCompletedModules] = useState({});
-  const [showCertificate, setShowCertificate] = useState(false);
+  const [completedModules, setCompletedModules] = useState(() => {
+    try {
+      const saved = localStorage.getItem('khan_suraksha_completed_modules');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+  const [showCertificate, setShowCertificate] = useState(() => {
+    try {
+      return localStorage.getItem('khan_suraksha_show_certificate') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  // Sync to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('khan_suraksha_worker_step', workerStep);
+    } catch {}
+  }, [workerStep]);
+
+  useEffect(() => {
+    try {
+      if (currentWorker) {
+        localStorage.setItem('khan_suraksha_current_worker', JSON.stringify(currentWorker));
+      } else {
+        localStorage.removeItem('khan_suraksha_current_worker');
+      }
+    } catch {}
+  }, [currentWorker]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('khan_suraksha_lang', lang);
+    } catch {}
+  }, [lang]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('khan_suraksha_completed_modules', JSON.stringify(completedModules));
+    } catch {}
+  }, [completedModules]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('khan_suraksha_show_certificate', showCertificate ? 'true' : 'false');
+    } catch {}
+  }, [showCertificate]);
 
   const t = translations[lang] || translations.hi;
 
@@ -49,9 +155,14 @@ export default function App() {
     setWorkerStep('language');
   };
 
-
-  // Logout
+  // Logout & Clear Session Storage
   const handleLogout = () => {
+    try {
+      localStorage.removeItem('khan_suraksha_worker_step');
+      localStorage.removeItem('khan_suraksha_current_worker');
+      localStorage.removeItem('khan_suraksha_show_certificate');
+      localStorage.removeItem('khan_suraksha_completed_modules');
+    } catch {}
     setCurrentWorker(null);
     setWorkerStep('language');
     setShowCertificate(false);
@@ -226,6 +337,7 @@ export default function App() {
                     workerData={workerCertificationData}
                     lang={lang}
                     onReset={handleResetTraining}
+                    onEnterShift={() => setWorkerStep('underground')}
                   />
                 ) : (
                   <div className="w-full flex flex-col items-center">
@@ -271,6 +383,21 @@ export default function App() {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Worker Step 4: Subterranean Shift Companion (Emergency SOS, 2D Map & Gate-Out QR) */}
+            {workerStep === 'underground' && (
+              <ErrorBoundary onReset={() => setWorkerStep('training')}>
+                <WorkerShiftCompanion 
+                  worker={currentWorker}
+                  workerData={workerCertificationData}
+                  lang={lang}
+                  onExitShift={() => {
+                    setWorkerStep('training');
+                    setShowCertificate(true);
+                  }}
+                />
+              </ErrorBoundary>
             )}
           </div>
         )}

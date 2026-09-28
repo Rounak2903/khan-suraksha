@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Award, ShieldCheck, Download, Printer, CheckCircle2, QrCode } from 'lucide-react';
+import { Award, ShieldCheck, Download, Printer, CheckCircle2, QrCode, Maximize2, X, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { translations } from '../../data/translations';
 
-export default function CertificateCard({ workerData, lang, onReset }) {
+export default function CertificateCard({ workerData, lang, onReset, onEnterShift }) {
   const t = translations[lang] || translations.hi;
+  const [isZoomed, setIsZoomed] = useState(false);
 
   // Trigger celebration confetti on mount
   useEffect(() => {
@@ -112,25 +113,42 @@ export default function CertificateCard({ workerData, lang, onReset }) {
 
         {/* QR Code & Tamper-Proof Cryptographic Hash */}
         <div className="flex items-center justify-between bg-black/60 p-3 rounded-xl border border-slate-800 gap-3">
-          <div className="bg-white p-1.5 rounded-xl shadow-lg shrink-0">
+          <div 
+            onClick={() => setIsZoomed(true)}
+            className="bg-white p-2 rounded-xl shadow-lg shrink-0 cursor-pointer group relative hover:ring-2 hover:ring-amber-400 transition"
+            title="Click to Zoom QR for Webcam Scanning"
+          >
             <QRCodeSVG 
               value={qrPayload} 
-              size={84} 
+              size={96} 
               level="L" 
               includeMargin={true} 
             />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-xl transition text-white font-mono text-[9px] font-bold">
+              🔍 ZOOM
+            </div>
           </div>
 
           <div className="flex-1 text-left">
-            <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-bold font-mono">
-              <CheckCircle2 className="w-3 h-3" />
-              <span>HMAC-SHA256 SIGNED</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-bold font-mono">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>HMAC-SHA256 SIGNED</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsZoomed(true)}
+                className="text-[10px] text-amber-400 hover:text-amber-300 font-mono flex items-center gap-1 underline cursor-pointer"
+              >
+                <Maximize2 className="w-3 h-3" />
+                <span>Zoom QR</span>
+              </button>
             </div>
             <div className="text-[8px] font-mono text-slate-500 break-all leading-tight mt-1">
               HASH: {workerData.certHash}
             </div>
             <div className="text-[9px] text-slate-400 mt-1">
-              Scan with DGMS Inspector Portal to verify offline.
+              Scan with DGMS Pit-Head Gate-In console.
             </div>
           </div>
         </div>
@@ -153,8 +171,25 @@ export default function CertificateCard({ workerData, lang, onReset }) {
         </div>
       </div>
 
+      {/* Enter Underground Shift Companion Button */}
+      {onEnterShift && (
+        <button
+          type="button"
+          onClick={onEnterShift}
+          className="w-full mt-3 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer border-2 border-emerald-400/60"
+        >
+          <span>⚡</span>
+          <span>
+            {lang === 'hi' 
+              ? 'खदान कार्य मोड शुरू करें (Enter Underground Shift)' 
+              : (lang === 'sat' ? 'ᱠᱷᱟᱫᱟᱱ ᱠᱟᱹᱢᱤ ᱮᱦᱚᱵᱽ ᱢᱮ (Enter Shift)' : 'Enter Underground Shift Mode')}
+          </span>
+          <ArrowRight className="w-4 h-4 stroke-[3]" />
+        </button>
+      )}
+
       {/* Action Buttons */}
-      <div className="w-full flex gap-2 mt-4">
+      <div className="w-full flex gap-2 mt-3">
         <button
           onClick={handlePrint}
           className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-95"
@@ -170,6 +205,64 @@ export default function CertificateCard({ workerData, lang, onReset }) {
           {t.retake}
         </button>
       </div>
+
+      {/* FULLSCREEN / ZOOMED QR MODAL FOR OPTICAL WEBCAM SCANNING */}
+      {isZoomed && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#0f172a] border-2 border-amber-500/80 rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center relative">
+            <button
+              onClick={() => setIsZoomed(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-amber-400 font-mono text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <QrCode className="w-4 h-4" />
+              <span>DGMS Pit-Head Gate-In QR</span>
+            </div>
+            <h3 className="text-base font-black text-white mb-4">
+              {workerData.name} ({workerData.id})
+            </h3>
+
+            {/* High-Contrast Large QR with Extra Quiet Zone Margin */}
+            <div className="bg-white p-4 rounded-2xl shadow-2xl border-4 border-emerald-400 mb-4">
+              <QRCodeSVG 
+                value={qrPayload} 
+                size={220} 
+                level="L" 
+                includeMargin={true} 
+              />
+            </div>
+
+            <div className="p-3 bg-slate-900/90 rounded-xl border border-slate-800 text-left text-xs font-mono text-slate-300 space-y-1 mb-4 w-full">
+              <div className="flex justify-between">
+                <span className="text-slate-500">DGMS Status:</span>
+                <span className="text-emerald-400 font-bold">COMPLIANT</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Vitals / Alert:</span>
+                <span className="text-white font-bold">{workerData.vitals ? `SpO2 ${workerData.vitals.spo2}% • ${workerData.vitals.heartRate} BPM` : 'Normal'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">AR Score:</span>
+                <span className="text-amber-400 font-bold">CAS {workerData.casScore}%</span>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-amber-300/90 font-mono bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5 w-full">
+              💡 <strong>Webcam Tip:</strong> Keep phone screen brightness around 60% and hold 1 to 2 feet away from camera.
+            </div>
+
+            <button
+              onClick={() => setIsZoomed(false)}
+              className="mt-4 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs font-mono transition cursor-pointer"
+            >
+              Close / कार्ड पर वापस जाएं
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -75,3 +75,37 @@ export async function postMinerAction(actionPayload) {
 
   return { success, result };
 }
+
+const EMERGENCY_ENDPOINTS = [
+  '/api/emergency',
+  'http://localhost:5174/api/emergency',
+  'http://localhost:5173/api/emergency'
+];
+
+export async function fetchEmergencyStatus() {
+  for (const url of EMERGENCY_ENDPOINTS) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {}
+  }
+  return { active: false };
+}
+
+export async function postEmergencyAction(payload) {
+  for (const url of EMERGENCY_ENDPOINTS) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {}
+  }
+  return { success: false };
+}
