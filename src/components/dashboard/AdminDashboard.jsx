@@ -520,13 +520,46 @@ export default function AdminDashboard({ lang = 'en' }) {
     };
 
     syncEmergency();
+
+    // Instant Inter-Tab Channel & Storage Listener (0ms latency)
+    let bc = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        bc = new BroadcastChannel('khan_suraksha_emergency_channel');
+        bc.onmessage = (event) => {
+          const em = event.data;
+          if (em && em.active) {
+            setEmergencyInfo(em);
+            setIsEmergencyActive(true);
+            startAdminSiren();
+            setHazardType(em.hazard || 'CH4_GAS');
+            setEvacTally({ safe: 3, moving: 1, trapped: 1 });
+          } else if (em && em.active === false) {
+            stopAdminSiren();
+            setIsEmergencyActive(false);
+            setEmergencyInfo(null);
+          }
+        };
+      }
+    } catch {}
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'khan_suraksha_emergency_status') {
+        syncEmergency();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
     // Real-time synchronization interval across tabs & ports
     const pollId = setInterval(() => {
       loadMiners();
       syncEmergency();
-    }, 2500);
+    }, 2000);
+
     return () => {
       clearInterval(pollId);
+      window.removeEventListener('storage', handleStorageChange);
+      if (bc) bc.close();
       stopAdminSiren();
     };
   }, []);

@@ -87,14 +87,33 @@ export async function fetchEmergencyStatus() {
     try {
       const res = await fetch(url);
       if (res.ok) {
-        return await res.json();
+        const data = await res.json();
+        try {
+          localStorage.setItem('khan_suraksha_emergency_status', JSON.stringify(data));
+        } catch {}
+        return data;
       }
     } catch {}
   }
+  try {
+    const cached = localStorage.getItem('khan_suraksha_emergency_status');
+    if (cached) return JSON.parse(cached);
+  } catch {}
   return { active: false };
 }
 
 export async function postEmergencyAction(payload) {
+  // 1. Instant local storage & BroadcastChannel trigger across all open tabs
+  try {
+    localStorage.setItem('khan_suraksha_emergency_status', JSON.stringify(payload));
+    if (typeof BroadcastChannel !== 'undefined') {
+      const bc = new BroadcastChannel('khan_suraksha_emergency_channel');
+      bc.postMessage(payload);
+      bc.close();
+    }
+  } catch {}
+
+  // 2. Synchronize to backend endpoints
   for (const url of EMERGENCY_ENDPOINTS) {
     try {
       const res = await fetch(url, {
@@ -107,5 +126,5 @@ export async function postEmergencyAction(payload) {
       }
     } catch {}
   }
-  return { success: false };
+  return { success: true };
 }

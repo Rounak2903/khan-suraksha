@@ -200,8 +200,38 @@ export default function WorkerShiftCompanion({ worker, workerData, lang, onExitS
     };
 
     checkEmergency();
-    const pollId = setInterval(checkEmergency, 2500);
-    return () => clearInterval(pollId);
+
+    let bc = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        bc = new BroadcastChannel('khan_suraksha_emergency_channel');
+        bc.onmessage = (event) => {
+          const em = event.data;
+          if (em && em.active) {
+            setIsEmergencyActive(true);
+            setHazardType(em.hazard || 'CH4_GAS');
+            startSiren();
+          } else if (em && em.active === false) {
+            stopSiren();
+            setIsEmergencyActive(false);
+          }
+        };
+      }
+    } catch {}
+
+    const handleStorage = (e) => {
+      if (e.key === 'khan_suraksha_emergency_status') {
+        checkEmergency();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    const pollId = setInterval(checkEmergency, 2000);
+    return () => {
+      clearInterval(pollId);
+      window.removeEventListener('storage', handleStorage);
+      if (bc) bc.close();
+    };
   }, [isEmergencyActive]);
 
   // Audio Siren generator using Web Audio API
